@@ -5,3 +5,4 @@
 peda*
 .gdb*
 test*
+*pyc
