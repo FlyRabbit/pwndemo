@@ -66,7 +66,6 @@ class daemon(Timeout):
             pid = os.fork()
             if pid == 0:
                 try:
-
                     self._ser_permission()
                     process = tubes.process.process(self.argv,
                                                     self.shell,
@@ -89,13 +88,14 @@ class daemon(Timeout):
                         if not self.countdown_active():
                             listen.sendline('Sorry timeout')
                     process.close()
-                    exit(0)
+                    listen.close()
                 except KeyboardInterrupt:
-                    exit(0)
+                    listen.close()
             else:
                 os.waitpid(pid, 0)
                 self._clear_env()
                 exit(0)
+
 
     def _set_env(self, getFlag):
         self.username = 'pwnuser%d'%(os.getpid(),)
