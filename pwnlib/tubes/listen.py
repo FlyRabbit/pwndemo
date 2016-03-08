@@ -7,7 +7,9 @@ from ..timeout import Timeout
 from .sock import sock
 
 log = getLogger(__name__)
-
+#forgive it
+black_list = ['gcc','cc','python','sudo','su','wget','nc','curl','ftp',
+              'sftp','ssh','vim','vi','nano','passwd','mv','cp','rm','tmp','touch','perl','ip','ifconfig']
 class listen(sock):
     """Creates an TCP or UDP-socket to receive data on. It supports
     both IPv4 and IPv6.

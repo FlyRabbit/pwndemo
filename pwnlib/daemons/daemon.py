@@ -10,12 +10,16 @@ from .listened import listened
 from .. import tubes
 from ..tubes.process import PIPE,PTY,STDOUT
 from .. import timeout
+from .. import log
 
 
+logger = log.getLogger('daemon')
 class daemon(Timeout):
     def __init__(self, timeout = 90):
         if timeout == 0:
             timeout = Timeout.forever
+        if os.getuid() != 0:
+            logger.error("This daemon need to run at root")
         super(daemon, self).__init__(timeout)
 
     def setlisten(self,port=0, bindaddr = "0.0.0.0",
@@ -75,7 +79,7 @@ class daemon(Timeout):
                                                     self.stderr,
                                                     self.close_fds,
                                                     self.preexec_fn)
-                    process.set_info_log(True)
+                    process.close_info_log(True)
                     process.connect_both(listen)
                     with self.countdown():
                         while self.countdown_active():
@@ -113,6 +117,8 @@ class daemon(Timeout):
         os.setgid(gid)
         os.setuid(uid)
 
+    def close_all_log(self):
+        log.close_all_log = True
     def _clear_env(self):
         os.system('killall -u {} -9'.format(self.username))
         os.system('userdel -r ' + self.username)

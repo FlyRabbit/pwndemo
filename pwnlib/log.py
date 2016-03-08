@@ -141,7 +141,7 @@ _msgtype_prefixes = {
 _spinner_style = text.bold_blue
 
 lock = threading.Lock()
-
+close_all_log = False
 class Progress(object):
     """
     Progress logger used to generate log records associated with some running
@@ -250,6 +250,8 @@ class Logger(object):
         self._logger = logger
 
     def _log(self, level, msg, args, kwargs, msgtype, progress = None):
+        if close_all_log == True:
+            return
         lock.acquire()
         extra = kwargs.get('extra', {})
         extra.setdefault('pwnlib_msgtype', msgtype)

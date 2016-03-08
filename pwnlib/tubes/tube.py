@@ -1272,7 +1272,7 @@ class tube(Timeout):
 
         raise NotImplementedError()
 
-    def set_info_log(self, close_info = False):
+    def close_info_log(self, close_info = False):
         self.close_info = close_info
 
     #: Alias for :meth:`recv`

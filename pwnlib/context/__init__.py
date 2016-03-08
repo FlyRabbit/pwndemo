@@ -614,35 +614,6 @@ class ContextType(object):
 
         return bits
 
-    @_validator
-    def binary(self, binary):
-        """
-        Infer target architecture, bit-with, and endianness from a binary file.
-        Data type is a :class:`pwnlib.elf.ELF` object.
-
-        Examples:
-
-            >>> context.clear()
-            >>> context.arch, context.bits
-            ('i386', 32)
-            >>> context.binary = '/bin/bash'
-            >>> context.arch, context.bits
-            ('amd64', 64)
-            >>> context.binary
-            ELF('/bin/bash')
-
-        """
-        # Cyclic imports... sorry Idolf.
-        from ..elf     import ELF
-
-        e = ELF(binary)
-
-        self.arch   = e.arch
-        self.bits   = e.bits
-        self.endian = e.endian
-
-        return e
-
     @property
     def bytes(self):
         """
