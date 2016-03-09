@@ -121,6 +121,7 @@ class daemon(Timeout):
         log.close_all_log = True
     def _clear_env(self):
         os.system('killall -u {} -9'.format(self.username))
-        os.system('userdel -r ' + self.username)
-        os.system('groupdel ' + self.username)
+        os.system('userdel  ' + self.username)
+        os.system('rm -rf ' + self.cwd)
+        #os.system('groupdel ' + self.username)
 

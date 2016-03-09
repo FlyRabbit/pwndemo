@@ -22,8 +22,8 @@ class wait_child(threading.Thread):
             except OSError:
                 time.sleep(0.5)
                 continue
-    def end(self):
-        pass
+    #def end(self):
+        #pass
 
 class listened():
     def __init__(self, port=0, bindaddr="0.0.0.0",
@@ -48,10 +48,12 @@ class listened():
                 if self.pid == 0:
                     return self.listen_handle
                 else:
+                    time.sleep(0.3)
                     self.listen_handle = listen(self.port, self.bindaddr, self.fam, self.typ, self.timeout)
         except KeyboardInterrupt:
             self.listen_handle.close()
-            os.kill(self.w.pid,signal.SIGTERM)
+            if self.w.pid != 0:
+                os.kill(self.w.pid,signal.SIGTERM)
             return None
 
 
