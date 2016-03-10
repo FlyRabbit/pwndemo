@@ -15,6 +15,7 @@ __all__ = [
     'ui',
     'util',
     'daemons',
+    'sqllog',
 ]
 
 for module in __all__:

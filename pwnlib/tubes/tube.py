@@ -17,6 +17,7 @@ from ..util import fiddling
 from ..util import misc
 from ..util import packing
 from .buffer import Buffer
+from .. import sqllog
 
 log = getLogger(__name__)
 dumplog = getPerformanceLogger(__name__ + '.dump')
@@ -124,6 +125,8 @@ class tube(Timeout):
             data = self.recv_raw(4096)
 
         if data and dumplog.isEnabledFor(logging.INFO) and not self.close_info:
+            if sqllog.sql_on == True:
+                sqllog.sql.log_data(data, sqllog.recv)
             dumplog.recv('Received %#x bytes:' % len(data))
 
             if len(set(data)) == 1:
@@ -705,6 +708,8 @@ class tube(Timeout):
         """
 
         if dumplog.isEnabledFor(logging.INFO) and not self.close_info:
+            if sqllog.sql_on == True:
+                sqllog.sql.log_data(data, sqllog.send)
             dumplog.send('Sent %#x bytes:' % len(data))
             if len(set(data)) == 1:
                 dumplog.indented2('%r * %#x' % (data[0], len(data)), level = logging.INFO)

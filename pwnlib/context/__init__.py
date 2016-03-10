@@ -303,6 +303,7 @@ class ContextType(object):
     #
     __slots__ = '_tls',
 
+
     #: Default values for :class:`pwnlib.context.ContextType`
     defaults = {
         'arch': 'i386',
@@ -381,7 +382,6 @@ class ContextType(object):
         """
         self._tls = _Tls_DictStack(_defaultdict(ContextType.defaults))
         self.update(**kwargs)
-
 
     def copy(self):
         """copy() -> dict

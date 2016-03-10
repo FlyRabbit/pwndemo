@@ -142,10 +142,11 @@ _spinner_style = text.bold_blue
 
 lock = threading.Lock()
 close_all_log = False
+
 class Progress(object):
     """
     Progress logger used to generate log records associated with some running
-    job.  Instances can be used as context managers which will automatically
+    job.  Instances cgan be used as context managers which will automatically
     declare the running job a success upon exit or a failure upon a thrown
     exception.  After :meth:`success` or :meth:`failure` is called the status
     can no longer be updated.

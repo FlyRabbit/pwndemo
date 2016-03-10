@@ -43,6 +43,7 @@ from pwnlib.util.lists import *
 from pwnlib.util.misc import *
 from pwnlib.util.packing import *
 from pwnlib.util.proc import pidof
+from pwnlib.sqllog import set_sql
 
 try:
     import cPickle as pickle

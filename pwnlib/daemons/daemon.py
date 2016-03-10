@@ -11,7 +11,7 @@ from .. import tubes
 from ..tubes.process import PIPE,PTY,STDOUT
 from .. import timeout
 from .. import log
-
+from .. import sqllog
 
 logger = log.getLogger('daemon')
 class daemon(Timeout):
@@ -62,10 +62,16 @@ class daemon(Timeout):
         with listened(self.port, self.bindaddr, self.fam, self.typ, self.Timeout) as listen:
             if listen == None:
                 return
+
+            if sqllog.sql_on == True:
+                self.sql_init(listen)
+
+
             self._set_env(getFlag)
             pid = os.fork()
             if pid == 0:
                 try:
+                    sqllog.updata_sql()
                     self._ser_permission()
                     process = tubes.process.process(self.argv,
                                                     self.shell,
@@ -94,7 +100,9 @@ class daemon(Timeout):
             else:
                 os.waitpid(pid, 0)
                 self._clear_env()
-                exit(0)
+                if sqllog.sql_on == True:
+                    sqllog.updata_sql()
+                    sqllog.sql.log_finish()
 
 
     def _set_env(self, getFlag):
@@ -119,9 +127,21 @@ class daemon(Timeout):
 
     def close_all_log(self):
         log.close_all_log = True
+
+    def set_sql(self,sqluser, sqlpwd, host='localhost'):
+        sqllog.set_sql(sqluser, sqlpwd, host)
+        sqllog.sql_on = True
+
     def _clear_env(self):
         os.system('killall -u {} -9'.format(self.username))
         os.system('userdel  ' + self.username)
         os.system('rm -rf ' + self.cwd)
         #os.system('groupdel ' + self.username)
+
+    def sql_init(self,listen):
+        host, port = listen.sock.getpeername()
+        client = (host, port, "")
+        sqllog.sql.log_new_connection(client, self.argv)
+
+
 
