@@ -11,8 +11,8 @@ recv = 1
 send = 0
 
 class sqllog(object):
-    _consqlstr  = 'INSERT INTO pwnlog.connections(con_hash,token,host,port,con_time,fin_time,target) VALUES("%s","%s","%s",%d,%f,%f,"%s");'
-    _dsqlstr = 'INSERT INTO pwnlog.flow(con_hash,time,flag,data) VALUES("%s",%f,%d,"%s");'
+    _consqlstr  = 'INSERT INTO connections(con_hash,token,host,port,con_time,fin_time,target) VALUES("%s","%s","%s",%d,%f,%f,"%s");'
+    _dsqlstr = 'INSERT INTO flow(con_hash,time,flag,data) VALUES("%s",%f,%d,"%s");'
     _find_table = 'SELECT table_name FROM information_schema.TABLES WHERE table_name ="%s";'
 
     _creat_connections = 'create table if not exists connections( ' \
@@ -40,7 +40,7 @@ class sqllog(object):
     send = 0
 
     def __init__(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
-        self._db = MySQLdb.connect(host, sqluser, sqlpwd,'pwnlog')
+        self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
         csr = self._db.cursor()
 
         tstr = self._find_table%('connections',)
@@ -124,6 +124,7 @@ def set_sql(sqluser, sqlpwd, host='localhost', database='pwnlog'):
     sql_info['sqluser'] = sqluser
     sql_info['sqlpwd'] = sqlpwd
     sql_info['host'] = host
+    sql_info['database'] = database
 
     sql = sqllog(sqluser, sqlpwd, host, database)
     sql_on = True
@@ -132,5 +133,5 @@ def set_sql(sqluser, sqlpwd, host='localhost', database='pwnlog'):
 def updata_sql():
     global sql
     global sql_info
-    sql.update_handle(sql_info['sqluser'], sql_info['sqlpwd'], sql_info['host'])
+    sql.update_handle(sql_info['sqluser'], sql_info['sqlpwd'], sql_info['host'], sql_info['database'])
     return sql

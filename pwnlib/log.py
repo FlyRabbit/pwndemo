@@ -140,7 +140,7 @@ _msgtype_prefixes = {
 # in the `pwnlib.term.spinners` module
 _spinner_style = text.bold_blue
 
-lock = threading.Lock()
+
 close_all_log = False
 
 class Progress(object):
@@ -253,13 +253,13 @@ class Logger(object):
     def _log(self, level, msg, args, kwargs, msgtype, progress = None):
         if close_all_log == True:
             return
-        lock.acquire()
+
         extra = kwargs.get('extra', {})
         extra.setdefault('pwnlib_msgtype', msgtype)
         extra.setdefault('pwnlib_progress', progress)
         kwargs['extra'] = extra
         self._logger.log(level, msg, *args, **kwargs)
-        lock.release()
+
 
     def progress(self, message, status = '', *args, **kwargs):
         """progress(message, status = '', *args, level = logging.INFO, **kwargs) -> Progress
