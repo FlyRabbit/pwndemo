@@ -22,9 +22,9 @@ class daemon(Timeout):
             logger.error("This daemon need to run at root")
         super(daemon, self).__init__(timeout)
 
-    def setlisten(self,port=0, bindaddr = "0.0.0.0",
-                 fam = "any", typ = "tcp",
-                 timeout = Timeout.default):
+    def set_listen(self, port=0, bindaddr ="0.0.0.0",
+                   fam = "any", typ = "tcp",
+                   timeout = Timeout.default):
         self.port = port
         self.bindaddr = bindaddr
         self.fam = fam
@@ -32,17 +32,17 @@ class daemon(Timeout):
         self.Timeout = timeout
 
 
-    def setprocess(self, argv,
-                 shell = False,
-                 executable = None,
-                 cwd = None,
-                 env = None,
-                 timeout = Timeout.default,
-                 stdin  = PIPE,
-                 stdout = PTY,
-                 stderr = STDOUT,
-                 close_fds = True,
-                 preexec_fn = lambda: None):
+    def set_process(self, argv,
+                    shell = False,
+                    executable = None,
+                    cwd = None,
+                    env = None,
+                    timeout = Timeout.default,
+                    stdin  = PIPE,
+                    stdout = PTY,
+                    stderr = STDOUT,
+                    close_fds = True,
+                    preexec_fn = lambda: None):
         cwd = cwd or os.path.curdir
         if cwd != '/':
             cwd += '/'
@@ -62,7 +62,7 @@ class daemon(Timeout):
         with listened(self.port, self.bindaddr, self.fam, self.typ, self.Timeout) as listen:
             if listen == None:
                 return
-
+            print '============================================================'
             if sqllog.sql_on == True:
                 self.sql_init(listen)
 
@@ -71,8 +71,9 @@ class daemon(Timeout):
             pid = os.fork()
             if pid == 0:
                 try:
-                    sqllog.updata_sql()
-                    self._ser_permission()
+                    if sqllog.sql_on == True:
+                        sqllog.updata_sql()
+                    self._set_permission()
                     process = tubes.process.process(self.argv,
                                                     self.shell,
                                                     self.executable,
@@ -116,7 +117,7 @@ class daemon(Timeout):
             seed(time.time())
             os.system('echo "%s" >> %s/flag%d'%(getFlag(), self.cwd, randint(10000,99999)))
 
-    def _ser_permission(self):
+    def _set_permission(self):
         pw = getpwnam(self.username)
         uid = pw.pw_uid
         gid = pw.pw_gid
@@ -128,8 +129,8 @@ class daemon(Timeout):
     def close_all_log(self):
         log.close_all_log = True
 
-    def set_sql(self,sqluser, sqlpwd, host='localhost'):
-        sqllog.set_sql(sqluser, sqlpwd, host)
+    def set_sql(self,sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        sqllog.set_sql(sqluser, sqlpwd, host, database)
         sqllog.sql_on = True
 
     def _clear_env(self):

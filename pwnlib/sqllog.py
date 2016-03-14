@@ -11,14 +11,36 @@ recv = 1
 send = 0
 
 class sqllog(object):
-    _consqlstr  = 'INSERT INTO PWNLOG.connections(con_hash,token,host,port,con_time,fin_time,target) VALUES("%s","%s","%s",%d,%f,%f,"%s");'
-    _dsqlstr = 'INSERT INTO PWNLOG.flow(con_hash,time,flag,data) VALUES("%s",%f,%d,"%s");'
+    _consqlstr  = 'INSERT INTO pwnlog.connections(con_hash,token,host,port,con_time,fin_time,target) VALUES("%s","%s","%s",%d,%f,%f,"%s");'
+    _dsqlstr = 'INSERT INTO pwnlog.flow(con_hash,time,flag,data) VALUES("%s",%f,%d,"%s");'
     _find_table = 'SELECT table_name FROM information_schema.TABLES WHERE table_name ="%s";'
+
+    _creat_connections = 'create table if not exists connections( ' \
+                            'con_id INT(11) NOT NULL AUTO_INCREMENT ,' \
+                            'con_hash CHAR(45) NOT NULL , ' \
+                            'token VARCHAR(100) DEFAULT NULL ,' \
+                            'host CHAR(16) NOT NULL , ' \
+                            'port INT(11) NOT NULL , ' \
+                            'con_time DOUBLE NOT NULL , ' \
+                            'fin_time DOUBLE NOT NULL , ' \
+                            'target VARCHAR(1024) DEFAULT NULL ,' \
+                            'PRIMARY KEY (con_id)' \
+                         ');'
+
+    _flow = 'create table if not exists flow(' \
+                'id INT(11) NOT NULL AUTO_INCREMENT,' \
+                'con_hash CHAR(45) NOT NULL , ' \
+                'time DOUBLE NOT NULL , ' \
+                'flag INT(11) NOT NULL , ' \
+                'data MEDIUMTEXT, ' \
+                'PRIMARY KEY (id)' \
+            ');'
+
     recv = 1
     send = 0
 
-    def __init__(self,  sqluser, sqlpwd, host='localhost'):
-        self._db = MySQLdb.connect(host, sqluser, sqlpwd)
+    def __init__(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        self._db = MySQLdb.connect(host, sqluser, sqlpwd,'pwnlog')
         csr = self._db.cursor()
 
         tstr = self._find_table%('connections',)
@@ -69,14 +91,11 @@ class sqllog(object):
             self._db.rollback()
 
     def creat_table(self, table='connections'):
-        if self.is_init == False:
-            logger.error('Please call log_new_connection method before')
 
         if table == 'connections':
-            tstr = 'create table if not exists connections \
-(con_hash CHAR(45), token VARCHAR(100), host CHAR(16), post INT(11), con_time DOUBLE, fin_time DOUBLE, target VARCHAR(1024));'
+            tstr = self._creat_connections
         elif table == 'flow':
-            tstr = 'create table if not exists flow(con_hash CHAR(45), time DOUBLE, flag INT(11), data MEDIUMTEXT);'
+            tstr = self._flow
         else:
             return
         try:
@@ -93,14 +112,12 @@ class sqllog(object):
 
     def update_handle(self,  sqluser, sqlpwd, host='localhost'):
         self._db = MySQLdb.connect(host, sqluser, sqlpwd)
-        print self._db
-        print self.is_init
 
 
 sql = None
 sql_on = False
 sql_info = {}
-def set_sql(sqluser, sqlpwd, host='localhost'):
+def set_sql(sqluser, sqlpwd, host='localhost', database='pwnlog'):
     global sql
     global sql_on
     global sql_info
@@ -108,7 +125,7 @@ def set_sql(sqluser, sqlpwd, host='localhost'):
     sql_info['sqlpwd'] = sqlpwd
     sql_info['host'] = host
 
-    sql = sqllog(sqluser, sqlpwd, host)
+    sql = sqllog(sqluser, sqlpwd, host, database)
     sql_on = True
     return sql
 
