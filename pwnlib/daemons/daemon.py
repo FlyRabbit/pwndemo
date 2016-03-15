@@ -13,7 +13,7 @@ from .. import timeout
 from .. import log
 from .. import sqllog
 
-logger = log.getLogger('daemon')
+logger = log.getLogger('pwnlib.daemon')
 class daemon(Timeout):
     def __init__(self, timeout = 90):
         if timeout == 0:
@@ -62,10 +62,9 @@ class daemon(Timeout):
         with listened(self.port, self.bindaddr, self.fam, self.typ, self.Timeout) as listen:
             if listen == None:
                 return
-            print '============================================================'
+
             if sqllog.sql_on == True:
                 self.sql_init(listen)
-
 
             self._set_env(getFlag)
             pid = os.fork()

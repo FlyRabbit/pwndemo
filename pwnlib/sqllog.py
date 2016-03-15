@@ -6,7 +6,7 @@ import  traceback
 import time
 import  log
 
-logger = log.getLogger('sqllog')
+logger = log.getLogger('pwnlib.sqllog')
 recv = 1
 send = 0
 
@@ -56,7 +56,9 @@ class sqllog(object):
         csr.close()
         self.is_init = False
 
-    def log_new_connection(self,client,target='',t=time.time()):
+    def log_new_connection(self,client,target='',t=None):
+        if t == None:
+            t = time.time()
         self._con_time = t
         self._host, self._port, self._token = client
         self._token = base64.b64encode(self._token)
@@ -64,7 +66,9 @@ class sqllog(object):
         self._target = target
         self.is_init = True
 
-    def log_data(self, data, flag, t = time.time()):
+    def log_data(self, data, flag, t=None):
+        if t == None:
+            t = time.time()
         if self.is_init == False:
             logger.error('Please call log_new_connection method before')
 
@@ -78,7 +82,9 @@ class sqllog(object):
             traceback.print_exc()
             self._db.rollback()
 
-    def log_finish(self, t = time.time()):
+    def log_finish(self, t = None):
+        if t == None:
+            t = time.time()
         tstr = self._consqlstr%(self._con_hash, self._token, self._host, self._port, self._con_time, t, self._target)
         try:
             csr = self._db.cursor()
@@ -110,8 +116,8 @@ class sqllog(object):
     def close(self):
         self._db.close()
 
-    def update_handle(self,  sqluser, sqlpwd, host='localhost'):
-        self._db = MySQLdb.connect(host, sqluser, sqlpwd)
+    def update_handle(self,  sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
 
 
 sql = None

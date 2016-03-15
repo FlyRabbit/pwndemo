@@ -9,7 +9,7 @@ from .. import log
 import threading
 
 
-logger = log.getLogger('listened')
+logger = log.getLogger('pwnlib.listened')
 class wait_child(threading.Thread):
     def __init__(self):
         super(wait_child, self).__init__()

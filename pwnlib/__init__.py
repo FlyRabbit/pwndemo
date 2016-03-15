@@ -16,6 +16,7 @@ __all__ = [
     'util',
     'daemons',
     'sqllog',
+    'logrotate',
 ]
 
 for module in __all__:

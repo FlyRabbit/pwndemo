@@ -12,23 +12,23 @@ import  MySQLdb
 import  traceback
 import  logging
 
-log = getLogger('rotate')
+log = getLogger('pwnlib.rotate')
 
 class logrotate(object):
     _sql = 'SELECT * FROM connections '
-    _sql_id = 'id = %d '
-    _sql_hash = 'hash = %s '
-    _sql_token = 'token = %s '
-    _sql_host = 'host = %s '
+    _sql_id = 'con_id = %d '
+    _sql_hash = 'con_hash = "%s" '
+    _sql_token = 'token = "%s" '
+    _sql_host = 'host = "%s" '
     _sql_port = 'port = %d '
     _sql_con_time = 'con_time > %d '
     _sql_fin_time = 'fin_time < %d '
-    _sql_target = 'target = %s '
+    _sql_target = 'target = "%s" '
 
-    _sql_flow = 'SELECT * FROM flow WHERE con_hash = %s'
+    _sql_flow = 'SELECT * FROM flow WHERE con_hash = "%s" '
 
     def __init__(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
-        self._db = MySQLdb.connect(sqluser, sqlpwd, host, database)
+        self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
 
     def find(self, **kwargs):
         tstr = self.make_sql(**kwargs)
@@ -36,6 +36,7 @@ class logrotate(object):
         try:
             csr = self._db.cursor()
             csr.execute(tstr)
+            print tstr
             all_data = csr.fetchall()
             csr.close()
         except:
@@ -48,7 +49,10 @@ class logrotate(object):
         dataList = []
         dataList.append((self._sql_id, kwargs.get('con_id',None)))
         dataList.append((self._sql_hash, kwargs.get('con_hash', None)))
-        dataList.append((self._sql_token, b64encode(kwargs.get('token', None))))
+        token = kwargs.get('token', None)
+        if token != None:
+            token = b64encode(token)
+        dataList.append((self._sql_token, token))
         dataList.append((self._sql_host, kwargs.get('host', None)))
         dataList.append((self._sql_port, kwargs.get('port', None)))
         dataList.append((self._sql_con_time, kwargs.get('con_time', None)))
@@ -98,7 +102,7 @@ class logrotate(object):
             self._db.rollback()
 
         for row in temp_data:
-            data.append((row[2],row[3],row[4]))
+            data.append((row[2],row[3],b64decode(row[4])))
 
         data.sort()
 
@@ -112,18 +116,17 @@ class logdata(object):
 
     def show(self):
         log.info('Get a connnection to %s at %s'%(ctime(self._data['con_time']),self._data['target']))
-        log.info('The connection from %s:%d'%(self._data['hsot'],self._data['port']))
-        if self._data['token'] != None:
+        log.info('The connection from %s:%d'%(self._data['host'],self._data['port']))
+        if self._data['token'] != '':
             log.info('Token is: %s'%self._data['token'])
 
         datas = self._data['data']
 
         for data in datas:
-            log.info('At %s',ctime(data[0]))
             if data[1] == sqllog.recv:
-                log.recv('Received %#x bytes:' % len(data[2]))
+                log.recv('Received %#x bytes At %s: ' % (len(data[2]),ctime(data[0])))
             elif data[1] == sqllog.send:
-                log.send('Sent %#x bytes:' % len(data[2]))
+                log.send('Sent %#x bytes At %s:' % (len(data[2]),ctime(data[0])))
 
             if len(set(data[2])) == 1:
                 log.indented('%r * %#x' % (data[2][0], len(data[2])), level = logging.INFO)
