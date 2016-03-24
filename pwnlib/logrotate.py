@@ -12,6 +12,10 @@ import  MySQLdb
 import  traceback
 import  logging
 
+'''
+A class for log rotate. this class will get data from sql database and print data or pack as a josn
+'''
+
 log = getLogger('pwnlib.rotate')
 
 class logrotate(object):
@@ -28,9 +32,18 @@ class logrotate(object):
     _sql_flow = 'SELECT * FROM flow WHERE con_hash = "%s" '
 
     def __init__(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        """
+        The user name and password to the mysql database. the default database if pwnlog@localhost.
+        """
         self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
 
     def find(self, **kwargs):
+        """
+        Find data.The key of kwargs is also the field of connections.
+        use con_time and fin_time select the log between the times
+        It's return a list of logdata class.Every logdata class is a pack of one pwn attach
+        """
+
         tstr = self.make_sql(**kwargs)
         all_data = None
         try:
@@ -46,6 +59,10 @@ class logrotate(object):
         return self.pack(all_data)
 
     def make_sql(self, **kwargs):
+        """
+        get the enter limited and return a sql cmd.
+        """
+
         dataList = []
         dataList.append((self._sql_id, kwargs.get('con_id',None)))
         dataList.append((self._sql_hash, kwargs.get('con_hash', None)))
@@ -59,6 +76,8 @@ class logrotate(object):
         dataList.append((self._sql_fin_time, kwargs.get('fin_time', None)))
         dataList.append((self._sql_target, kwargs.get('target', None)))
 
+
+        # make sql just add string together
         flag = False
         tstr = self._sql
         for data in dataList:
@@ -73,9 +92,12 @@ class logrotate(object):
         return tstr
 
     def pack(self, allData):
+        '''
+        split the data to a list.and change the sql select data to a dict
+        '''
         dataList = []
         for row in allData:
-            IO_data = self.get_IO_data(row[1])
+            IO_data = self.get_IO_data(row[1])  #use con_hash to find send and recv data in flow
             temp_dict = {}
             temp_dict['con_id'] = row[0]
             temp_dict['con_hash'] = row[1]
@@ -90,6 +112,9 @@ class logrotate(object):
         return  dataList
 
     def get_IO_data(self, hash):
+        """
+        It's will use the hash two find the send and recv dates in flow table.And the data will sort by time.
+        """
         temp_data = ()
         data = []
         try:
@@ -111,10 +136,19 @@ class logrotate(object):
 
 
 class logdata(object):
+    """
+    A class for stone log data.It's easy to get a json or a dict from it.Or just show it.
+    """
     def __init__(self, data):
+        """
+        The class is made by logrotate and this function show not call by others
+        """
         self._data = data
 
     def show(self):
+        """
+        show the log data after format
+        """
         log.info('Get a connnection to %s at %s'%(ctime(self._data['con_time']),self._data['target']))
         log.info('The connection from %s:%d'%(self._data['host'],self._data['port']))
         if self._data['token'] != '':
@@ -138,7 +172,13 @@ class logdata(object):
 
 
     def get_josn(self):
+        """
+        dumps a json of data
+        """
         return json.dumps(self._data)
 
     def get_dict(self):
+        """
+        just return the dict it stone
+        """
         return self._data

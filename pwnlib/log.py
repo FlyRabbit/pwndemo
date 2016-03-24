@@ -132,7 +132,7 @@ _msgtype_prefixes = {
     'critical'     : (text.on_red, 'CRITICAL'),
     'info_once'    : (text.bold_blue, '*'),
     'warning_once' : (text.bold_yellow, '!'),
-    'send'         : (text.bold_red,    'SEND'),
+    'send'         : (text.bold_red,    'SEND'),    #add twe style send and recv.use for daemon log
     'recv'         : (text.bold_blue,   'RECV')
     }
 

@@ -5,7 +5,9 @@ import  MySQLdb
 import  traceback
 import time
 import  log
-
+"""
+It use mysql to stone all pwn attack logs.Just use logrotate to review logs.
+"""
 logger = log.getLogger('pwnlib.sqllog')
 recv = 1
 send = 0
@@ -40,9 +42,14 @@ class sqllog(object):
     send = 0
 
     def __init__(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        """
+        The argument for connect mysql.This class will hold the handle of the connect.
+        It will check if there is connection and flow table in the database.It will auto create tables
+        """
         self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
         csr = self._db.cursor()
 
+        #The table check
         tstr = self._find_table%('connections',)
         csr.execute(tstr)
 
@@ -57,6 +64,12 @@ class sqllog(object):
         self.is_init = False
 
     def log_new_connection(self,client,target='',t=None):
+        """
+        Init when get a new connect.
+        The client is a tuple with three element like this -> (host,port,token)
+        take the ip port and token and init the class.The log will insert into database after the connect end
+        The argument t is the time.use current time stamp as default
+        """
         if t == None:
             t = time.time()
         self._con_time = t
@@ -67,6 +80,11 @@ class sqllog(object):
         self.is_init = True
 
     def log_data(self, data, flag, t=None):
+        """
+        inset the send or recv data to database.
+        Use flag show be sqllog.recv or sqllog.send to show the data is recv data or send data
+        The argument t is the time.use current time stamp as default
+        """
         if t == None:
             t = time.time()
         if self.is_init == False:
@@ -83,6 +101,10 @@ class sqllog(object):
             self._db.rollback()
 
     def log_finish(self, t = None):
+        """
+        get the finish time of the connect.and log connect data to database
+        The argument t is the time.use current time stamp as default
+        """
         if t == None:
             t = time.time()
         tstr = self._consqlstr%(self._con_hash, self._token, self._host, self._port, self._con_time, t, self._target)
@@ -97,7 +119,9 @@ class sqllog(object):
             self._db.rollback()
 
     def creat_table(self, table='connections'):
-
+        """
+        the method to create table user sql cmd
+        """
         if table == 'connections':
             tstr = self._creat_connections
         elif table == 'flow':
@@ -114,9 +138,15 @@ class sqllog(object):
             self._db.rollback()
 
     def close(self):
+        """
+        close database connection
+        """
         self._db.close()
 
     def update_handle(self,  sqluser, sqlpwd, host='localhost', database='pwnlog'):
+        """
+        use to get a new connection hand.user when fork a new process
+        """
         self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
 
 
@@ -124,6 +154,9 @@ sql = None
 sql_on = False
 sql_info = {}
 def set_sql(sqluser, sqlpwd, host='localhost', database='pwnlog'):
+    """
+    The func to get sqllog class.and stone the connection user info
+    """
     global sql
     global sql_on
     global sql_info
@@ -137,6 +170,9 @@ def set_sql(sqluser, sqlpwd, host='localhost', database='pwnlog'):
     return sql
 
 def updata_sql():
+    """
+    get a new sqlclass with the stone user info
+    """
     global sql
     global sql_info
     sql.update_handle(sql_info['sqluser'], sql_info['sqlpwd'], sql_info['host'], sql_info['database'])
