@@ -139,9 +139,10 @@ class daemon(Timeout):
         #os.system('groupdel ' + self.username)
 
     def sql_init(self,listen):
-        host, port = listen.sock.getpeername()
-        client = (host, port, "")
-        sqllog.sql.log_new_connection(client, self.argv)
+        host, dport = listen.sock.getpeername()
+        ip, sport = listen.sock.getsockname()
+        client = (host, dport, "")
+        sqllog.sql.log_new_connection(client, (self.argv,ip,sport))
 
 
 

@@ -13,8 +13,11 @@ recv = 1
 send = 0
 
 class sqllog(object):
-    _consqlstr  = 'INSERT INTO connections(con_hash,token,host,port,con_time,fin_time,target) VALUES("%s","%s","%s",%d,%f,%f,"%s");'
+    _consqlstr  = 'INSERT INTO connections(con_hash,token,host,ip,dport,sport,con_time,fin_time,target) ' \
+                  'VALUES("%s","%s","%s","%s",%d,%d,%f,%f,"%s");'
+
     _dsqlstr = 'INSERT INTO flow(con_hash,time,flag,data) VALUES("%s",%f,%d,"%s");'
+
     _find_table = 'SELECT table_name FROM information_schema.TABLES WHERE table_name ="%s";'
 
     _creat_connections = 'create table if not exists connections( ' \
@@ -22,7 +25,9 @@ class sqllog(object):
                             'con_hash CHAR(45) NOT NULL , ' \
                             'token VARCHAR(100) DEFAULT NULL ,' \
                             'host CHAR(16) NOT NULL , ' \
-                            'port INT(11) NOT NULL , ' \
+                            'ip char(16) NOT NULL, ' \
+                            'dport INT(11) NOT NULL , ' \
+                            'sport INT(11) NOT NULL, ' \
                             'con_time DOUBLE NOT NULL , ' \
                             'fin_time DOUBLE NOT NULL , ' \
                             'target VARCHAR(1024) DEFAULT NULL ,' \
@@ -73,10 +78,10 @@ class sqllog(object):
         if t == None:
             t = time.time()
         self._con_time = t
-        self._host, self._port, self._token = client
+        self._host, self._dport, self._token = client
         self._token = base64.b64encode(self._token)
-        self._con_hash = md5('%s:%d-%f'%(self._host,self._port,self._con_time)).hexdigest()
-        self._target = target
+        self._con_hash = md5('%s:%d-%f' % (self._host, self._dport, self._con_time)).hexdigest()
+        self._target,self._ip,self._sport = target
         self.is_init = True
 
     def log_data(self, data, flag, t=None):
@@ -107,7 +112,16 @@ class sqllog(object):
         """
         if t == None:
             t = time.time()
-        tstr = self._consqlstr%(self._con_hash, self._token, self._host, self._port, self._con_time, t, self._target)
+        tstr = self._consqlstr%(self._con_hash,
+                                self._token,
+                                self._host,
+                                self._ip,
+                                self._dport,
+                                self._sport,
+                                self._con_time,
+                                t,
+                                self._target)
+
         try:
             csr = self._db.cursor()
             csr.execute(tstr)

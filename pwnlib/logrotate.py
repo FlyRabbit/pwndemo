@@ -24,10 +24,13 @@ class logrotate(object):
     _sql_hash = 'con_hash = "%s" '
     _sql_token = 'token = "%s" '
     _sql_host = 'host = "%s" '
-    _sql_port = 'port = %d '
+    _sql_ip = 'ip = "%s" '
+    _sql_dport = 'dport = %d '
+    _sql_sport = 'sport = %d'
     _sql_con_time = 'con_time > %d '
     _sql_fin_time = 'fin_time < %d '
     _sql_target = 'target = "%s" '
+
 
     _sql_flow = 'SELECT * FROM flow WHERE con_hash = "%s" '
 
@@ -49,7 +52,7 @@ class logrotate(object):
         try:
             csr = self._db.cursor()
             csr.execute(tstr)
-            print tstr
+            #print tstr
             all_data = csr.fetchall()
             csr.close()
         except:
@@ -71,10 +74,13 @@ class logrotate(object):
             token = b64encode(token)
         dataList.append((self._sql_token, token))
         dataList.append((self._sql_host, kwargs.get('host', None)))
-        dataList.append((self._sql_port, kwargs.get('port', None)))
+        dataList.append((self._sql_ip, kwargs.get('ip', None)))
+        dataList.append((self._sql_dport, kwargs.get('dport', None)))
+        dataList.append((self._sql_sport, kwargs.get('sport', None)))
         dataList.append((self._sql_con_time, kwargs.get('con_time', None)))
         dataList.append((self._sql_fin_time, kwargs.get('fin_time', None)))
         dataList.append((self._sql_target, kwargs.get('target', None)))
+
 
 
         # make sql just add string together
@@ -103,10 +109,12 @@ class logrotate(object):
             temp_dict['con_hash'] = row[1]
             temp_dict['token'] = b64decode(row[2])
             temp_dict['host'] = row[3]
-            temp_dict['port'] = row[4]
-            temp_dict['con_time'] = row[5]
-            temp_dict['fin_time'] = row[6]
-            temp_dict['target'] = row[7]
+            temp_dict['ip'] = row[4]
+            temp_dict['dport'] = row[5]
+            temp_dict['sport'] = row[6]
+            temp_dict['con_time'] = row[7]
+            temp_dict['fin_time'] = row[8]
+            temp_dict['target'] = row[9]
             temp_dict['data'] = IO_data
             dataList.append(logdata(temp_dict))
         return  dataList
@@ -149,8 +157,12 @@ class logdata(object):
         """
         show the log data after format
         """
-        log.info('Get a connnection to %s at %s'%(ctime(self._data['con_time']),self._data['target']))
-        log.info('The connection from %s:%d'%(self._data['host'],self._data['port']))
+        log.info('%s:%d get a connnection to %s at %s'%(self._data['ip'],
+                                                        self._data['sport'],
+                                                        self._data['target'],
+                                                        ctime(self._data['con_time'])))
+
+        log.info('The connection from %s:%d'%(self._data['host'],self._data['dport']))
         if self._data['token'] != '':
             log.info('Token is: %s'%self._data['token'])
 
