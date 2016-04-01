@@ -94,7 +94,7 @@ class daemon(Timeout):
                         if not self.countdown_active():
                             listen.sendline('Sorry timeout')
                     process.close()
-                    listen.close()
+                    #listen.close()
                 except KeyboardInterrupt:
                     listen.close()
             else:

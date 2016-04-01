@@ -49,7 +49,7 @@ class listened():
                 if self.pid == 0:
                     return self.listen_handle
                 else:
-                    time.sleep(0.3)
+                    #time.sleep(0.3)
                     self.listen_handle = listen(self.port, self.bindaddr, self.fam, self.typ, self.timeout)
         except KeyboardInterrupt:
             self.listen_handle.close()
@@ -59,5 +59,6 @@ class listened():
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.listen_handle.close()
-        exit(0)
+        #self.listen_handle.close()
+        #exit(0)
+        pass

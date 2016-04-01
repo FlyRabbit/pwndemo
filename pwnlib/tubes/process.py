@@ -152,23 +152,23 @@ class process(tube):
         self.cwd          = cwd or os.path.curdir
         self.preexec_user = preexec_fn
 
-        message = "Starting program %r" % self.program
-
-        if log.isEnabledFor(logging.INFO):
-            if self.argv != [self.executable]: message += ' argv=%r ' % self.argv
-            if self.env  != os.environ:        message += ' env=%r ' % self.env
-
-        with log.progress(message) as p:
-            self.proc = subprocess.Popen(args = argv,
-                                         shell = shell,
-                                         executable = executable,
-                                         cwd = cwd,
-                                         env = env,
-                                         stdin = stdin,
-                                         stdout = stdout,
-                                         stderr = stderr,
-                                         close_fds = close_fds,
-                                         preexec_fn = self.preexec_fn)
+        # message = "Starting program %r" % self.program
+        #
+        # if log.isEnabledFor(logging.INFO):
+        #     if self.argv != [self.executable]: message += ' argv=%r ' % self.argv
+        #     if self.env  != os.environ:        message += ' env=%r ' % self.env
+        #
+        # with log.progress(message) as p:
+        self.proc = subprocess.Popen(args = argv,
+                                     shell = shell,
+                                     executable = executable,
+                                     cwd = cwd,
+                                     env = env,
+                                     stdin = stdin,
+                                     stdout = stdout,
+                                     stderr = stderr,
+                                     close_fds = close_fds,
+                                     preexec_fn = self.preexec_fn)
 
         if master:
             self.proc.stdout = os.fdopen(master)
@@ -316,7 +316,7 @@ class process(tube):
         self.proc.poll()
         if self.proc.returncode != None and not self._stop_noticed:
             self._stop_noticed = True
-            log.info("Program %r stopped with exit code %d" % (self.program, self.proc.returncode))
+            #log.info("Program %r stopped with exit code %d" % (self.program, self.proc.returncode))
 
         return self.proc.returncode
 

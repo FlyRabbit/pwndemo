@@ -52,7 +52,7 @@ class listen(sock):
         else:
             log.error("remote(): type %r is not supported" % typ)
 
-        log.info('Trying to bind to %s on port %d' % (bindaddr, port))
+        #log.info('Trying to bind to %s on port %d' % (bindaddr, port))
 
         for res in socket.getaddrinfo(bindaddr, port, fam, typ, 0, socket.AI_PASSIVE):
             self.family, self.type, self.proto, self.canonname, self.sockaddr = res
@@ -60,7 +60,7 @@ class listen(sock):
             if self.type not in [socket.SOCK_STREAM, socket.SOCK_DGRAM]:
                 continue
 
-            log.info("Trying %s" % self.sockaddr[0])
+            #log.info("Trying %s" % self.sockaddr[0])
             listen_sock = socket.socket(self.family, self.type, self.proto)
             listen_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             listen_sock.bind(self.sockaddr)
@@ -72,7 +72,7 @@ class listen(sock):
             log.error("Could not bind to %s on port %d" % (bindaddr, port))
 
 
-        log.info('Waiting for connections on %s:%s' % (self.lhost, self.lport))
+        #log.info('Waiting for connections on %s:%s' % (self.lhost, self.lport))
 
         def accepter():
             while True:
