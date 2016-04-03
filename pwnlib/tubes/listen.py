@@ -94,7 +94,8 @@ class listen(sock):
                     return
 
             self.rhost, self.rport = rhost[:2]
-            log.success('Got connection from %s on port %d' % (self.rhost, self.rport))
+            if self.close_info:
+                log.success('Got connection from %s on port %d' % (self.rhost, self.rport))
 
         self._accepter = context.Thread(target = accepter)
         self._accepter.daemon = True

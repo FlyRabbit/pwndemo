@@ -68,7 +68,7 @@ class sqllog(object):
         csr.close()
         self.is_init = False
 
-    def log_new_connection(self,client,target='',t=None):
+    def log_new_connection(self,client,target,t=None):
         """
         Init when get a new connect.
         The client is a tuple with three element like this -> (host,port,token)
@@ -163,6 +163,14 @@ class sqllog(object):
         """
         self._db = MySQLdb.connect(host, sqluser, sqlpwd, database)
 
+    def logFromPack(self, data):
+        temp_dict = data.get_dict()
+        self.log_new_connection((temp_dict['host'],temp_dict['dport'],temp_dict['token']),
+                                (temp_dict['target'],temp_dict['ip'],temp_dict['sport']),
+                                temp_dict['con_time'])
+        for data in temp_dict['data']:
+            self.log_data(data[2],data[1],data[0])
+        self.log_finish(temp_dict['fin_time'])
 
 sql = None
 sql_on = False

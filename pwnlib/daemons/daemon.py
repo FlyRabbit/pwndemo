@@ -87,10 +87,10 @@ class daemon(Timeout):
                     process.close_info_log(True)
                     process.connect_both(listen)
                     with self.countdown():
-                        while self.countdown_active():
+                        while self.countdown_active():  #shutdown process if time out
                             time.sleep(0.1)
                             if process.poll() != None:
-                                break
+                                break                   #don't count if process if end
                         if not self.countdown_active():
                             listen.sendline('Sorry timeout')
                     process.close()
