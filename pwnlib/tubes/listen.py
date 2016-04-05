@@ -94,7 +94,7 @@ class listen(sock):
                     return
 
             self.rhost, self.rport = rhost[:2]
-            if self.close_info:
+            if not self.close_info:
                 log.success('Got connection from %s on port %d' % (self.rhost, self.rport))
 
         self._accepter = context.Thread(target = accepter)

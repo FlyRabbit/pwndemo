@@ -8,47 +8,48 @@ from .. import context
 from ..timeout import Timeout
 from .listened import listened
 from .. import tubes
-from ..tubes.process import PIPE,PTY,STDOUT
+from ..tubes.process import PIPE, PTY, STDOUT
 from .. import timeout
 from .. import log
 from .. import sqllog
 
 logger = log.getLogger('pwnlib.daemon')
+
+
 class daemon(Timeout):
-    def __init__(self, timeout = 90):
+    def __init__(self, timeout=90):
         if timeout == 0:
             timeout = Timeout.forever
         if os.getuid() != 0:
             logger.error("This daemon need to run at root")
         super(daemon, self).__init__(timeout)
 
-    def set_listen(self, port=0, bindaddr ="0.0.0.0",
-                   fam = "any", typ = "tcp",
-                   timeout = Timeout.default):
+    def set_listen(self, port=0, bindaddr="0.0.0.0",
+                   fam="any", typ="tcp",
+                   timeout=Timeout.default):
         self.port = port
         self.bindaddr = bindaddr
         self.fam = fam
         self.typ = typ
         self.Timeout = timeout
 
-
     def set_process(self, argv,
-                    shell = False,
-                    executable = None,
-                    cwd = None,
-                    env = None,
-                    timeout = Timeout.default,
-                    stdin  = PIPE,
-                    stdout = PTY,
-                    stderr = STDOUT,
-                    close_fds = True,
-                    preexec_fn = lambda: None):
+                    shell=False,
+                    executable=None,
+                    cwd=None,
+                    env=None,
+                    timeout=Timeout.default,
+                    stdin=PIPE,
+                    stdout=PTY,
+                    stderr=STDOUT,
+                    close_fds=True,
+                    preexec_fn=lambda: None):
         cwd = cwd or os.path.curdir
         if cwd != '/':
             cwd += '/'
         self.argv = argv
-        self.shell =shell
-        self.executable =executable
+        self.shell = shell
+        self.executable = executable
         self.cwd = cwd
         self.env = env
         self.out = timeout
@@ -58,7 +59,7 @@ class daemon(Timeout):
         self.close_fds = close_fds
         self.preexec_fn = preexec_fn
 
-    def __call__(self,getFlag = None):
+    def __call__(self, getFlag=None):
         with listened(self.port, self.bindaddr, self.fam, self.typ, self.Timeout) as listen:
             if listen == None:
                 return
@@ -87,14 +88,14 @@ class daemon(Timeout):
                     process.close_info_log(True)
                     process.connect_both(listen)
                     with self.countdown():
-                        while self.countdown_active():  #shutdown process if time out
+                        while self.countdown_active():  # shutdown process if time out
                             time.sleep(0.1)
                             if process.poll() != None:
-                                break                   #don't count if process if end
+                                break  # don't count if process if end
                         if not self.countdown_active():
                             listen.sendline('Sorry timeout')
                     process.close()
-                    #listen.close()
+                    # listen.close()
                 except KeyboardInterrupt:
                     listen.close()
             else:
@@ -104,17 +105,16 @@ class daemon(Timeout):
                     sqllog.updata_sql()
                     sqllog.sql.log_finish()
 
-
     def _set_env(self, getFlag):
-        self.username = 'pwnuser%d'%(os.getpid(),)
+        self.username = 'pwnuser%d' % (os.getpid(),)
         self.cwd = self.cwd + self.username
-        os.makedirs(self.cwd,0755)
+        os.makedirs(self.cwd, 0755)
         os.system('useradd -p "" -s "/usr/sbin/nologin" -d "{}" {}'.format(self.cwd, self.username))
-        os.system('chown -hR {0}:{0} {1}/ '.format(self.username,self.cwd))
+        os.system('chown -hR {0}:{0} {1}/ '.format(self.username, self.cwd))
         os.system('chmod -R 0750 ' + self.cwd)
         if getFlag != None:
             seed(time.time())
-            os.system('echo "%s" >> %s/flag%d'%(getFlag(), self.cwd, randint(10000,99999)))
+            os.system('echo "%s" >> %s/flag%d' % (getFlag(), self.cwd, randint(10000, 99999)))
 
     def _set_permission(self):
         pw = getpwnam(self.username)
@@ -128,7 +128,7 @@ class daemon(Timeout):
     def close_all_log(self):
         log.close_all_log = True
 
-    def set_sql(self,sqluser, sqlpwd, host='localhost', database='pwnlog'):
+    def set_sql(self, sqluser, sqlpwd, host='localhost', database='pwnlog'):
         sqllog.set_sql(sqluser, sqlpwd, host, database)
         sqllog.sql_on = True
 
@@ -136,13 +136,10 @@ class daemon(Timeout):
         os.system('killall -u {} -9'.format(self.username))
         os.system('userdel  ' + self.username)
         os.system('rm -rf ' + self.cwd)
-        #os.system('groupdel ' + self.username)
+        # os.system('groupdel ' + self.username)
 
-    def sql_init(self,listen):
+    def sql_init(self, listen):
         host, dport = listen.sock.getpeername()
         ip, sport = listen.sock.getsockname()
         client = (host, dport, "")
-        sqllog.sql.log_new_connection(client, (self.argv,ip,sport))
-
-
-
+        sqllog.sql.log_new_connection(client, (self.argv, ip, sport))

@@ -1,5 +1,7 @@
 import os
 import threading
+
+import StringIO
 import dpkt
 import time
 import signal
@@ -18,15 +20,17 @@ class pcapDecode(threading.Thread):
 
     def __init__(self):
         super(pcapDecode, self).__init__()
+        self.i = 0
         self.pid = 0
         self.linkList = []
+        self.io = StringIO.StringIO()
+        self.fileHead = ''
 
     def run(self):
         self.pid = os.getpid()
         while True:
             data, info = pcapQueue.get()
             self.decodeData(data, info)
-
 
     def findDict(self, src, dst, sport, dport):
         i = 0
@@ -43,16 +47,81 @@ class pcapDecode(threading.Thread):
 
     def decodeData(self, data, info):
         data = b64decode(data)
-        tmp = os.tmpfile()
-        tmp.write(data)
-        tmp.seek(0)
-        pcapReader = dpkt.pcap.Reader(tmp)
-        for ts, data in pcapReader:
-            ether = dpkt.ethernet.Ethernet(data)
+        if self.fileHead == '':
+            self.fileHead = data[:24]
+        self.io.write(data)
+        self.io.seek(0)
+
+        pcapReader = dpkt.pcap.Reader(self.io)
+
+        pos = self.io.pos
+        Pos2 = pos
+        ether2 = None
+        ts2 = 0
+        try:
+            ts2, data = pcapReader.next()
+            ether2 = dpkt.ethernet.Ethernet(data)
+            Pos2 = self.io.pos
+        except dpkt.NeedData:
+            print  'need data'
+            self.io.seek(pos)
+            tmp = self.io.read()
+            self.io.close()
+            self.io = StringIO.StringIO()
+            self.io.write(self.fileHead+tmp)
+            return
+        except StopIteration:
+            print 'inter'
+            self.io.seek(pos)
+            tmp = self.io.read()
+            self.io.close()
+            self.io = StringIO.StringIO()
+            self.io.write(self.fileHead + tmp)
+            return
+
+        while True:
+            ether = ether2
+            ts = ts2
+            try:
+                ts2, data = pcapReader.next()
+                ether2 = dpkt.ethernet.Ethernet(data)
+                pos = Pos2
+                Pos2 = self.io.pos
+            except dpkt.NeedData:
+                self.io.seek(pos)
+                tmp = self.io.read()
+                self.io.close()
+                self.io = StringIO.StringIO()
+                self.io.write(self.fileHead + tmp)
+                break
+            except StopIteration:
+                self.io.seek(pos)
+                tmp = self.io.read()
+                self.io.close()
+                self.io = StringIO.StringIO()
+                self.io.write(self.fileHead + tmp)
+                break
+                # for ts, data in pcapReader:
+                #     try:
+                #         ether = dpkt.ethernet.Ethernet(data)
+                #         pos = self.io.pos
+                #     except dpkt.NeedData:
+                #         self.io.seek(pos)
+                #         tmp = self.io.read()
+                #         self.io.seek(24)
+                #         self.io.write(tmp)
+
             if ether.type == dpkt.ethernet.ETH_TYPE_IP:
                 ip = ether.data
-                src = socket.inet_ntoa(ip.src)
-                dst = socket.inet_ntoa(ip.dst)
+
+                try:
+                    src = socket.inet_ntoa(ip.src)
+                    dst = socket.inet_ntoa(ip.dst)
+                except AttributeError:
+                    fp = open('/tmp/tttt', 'a')
+                    fp.write(ip + '\n')
+                    fp.close()
+                    continue
 
                 getData = ip.data
 
@@ -70,7 +139,7 @@ class pcapDecode(threading.Thread):
                         temp_dict['sport'] = sport
                         temp_dict['con_time'] = ts
                         temp_dict['data'] = []
-                        #print temp_dict
+                        # print temp_dict
                         self.linkList.append(temp_dict)
 
                     elif getData.flags & dpkt.tcp.TH_FIN:
@@ -82,14 +151,18 @@ class pcapDecode(threading.Thread):
                         temp_dict['data'].sort()
                         packData = logdata(temp_dict)
                         self.linkList.pop(id)
-                        packData.show()
-                        #print "show over"
+                        if packData.level() >= 0:
+                            packData.show()
+                            self.i += 1
+                            #print '--------------------------------------------------------------------'
+                            #print self.i
+                        # print "show over"
                         if sqllog.sql_on == True:
                             sqllog.updata_sql()
                             sqllog.sql.logFromPack(packData)
 
                     elif getData.flags & dpkt.tcp.TH_PUSH:
-                        #print getData.data
+                        # print getData.data
                         flag = sqllog.send
                         id = self.findDict(src, dst, sport, dport)
                         if id == None:
@@ -109,11 +182,14 @@ def addQueue(data, info):
 def finishDecode():
     if pcap.pid != 0:
         os.kill(pcap.pid, signal.SIGTERM)
+
+
 pcap = None
 pcapQueue = None
 
+
 def start():
-    global pcap,pcapQueue
+    global pcap, pcapQueue
     pcapQueue = Queue()
     pcap = pcapDecode()
     pcap.start()

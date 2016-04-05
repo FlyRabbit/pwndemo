@@ -1,7 +1,7 @@
-import  traceback
+import traceback
 from base64 import b64encode, b64decode
 
-import  MySQLdb
+import MySQLdb
 
 from pwnlib.logdata import logdata
 from .log import getLogger
@@ -9,7 +9,6 @@ from .log import getLogger
 '''
 A class for log rotate. this class will get data from sql database and print data or pack as a josn
 '''
-
 
 
 class logrotate(object):
@@ -24,7 +23,6 @@ class logrotate(object):
     _sql_con_time = 'con_time > %d '
     _sql_fin_time = 'fin_time < %d '
     _sql_target = 'target = "%s" '
-
 
     _sql_flow = 'SELECT * FROM flow WHERE con_hash = "%s" '
 
@@ -46,7 +44,7 @@ class logrotate(object):
         try:
             csr = self._db.cursor()
             csr.execute(tstr)
-            #print tstr
+            # print tstr
             all_data = csr.fetchall()
             csr.close()
         except:
@@ -61,7 +59,7 @@ class logrotate(object):
         """
 
         dataList = []
-        dataList.append((self._sql_id, kwargs.get('con_id',None)))
+        dataList.append((self._sql_id, kwargs.get('con_id', None)))
         dataList.append((self._sql_hash, kwargs.get('con_hash', None)))
         token = kwargs.get('token', None)
         if token != None:
@@ -74,8 +72,6 @@ class logrotate(object):
         dataList.append((self._sql_con_time, kwargs.get('con_time', None)))
         dataList.append((self._sql_fin_time, kwargs.get('fin_time', None)))
         dataList.append((self._sql_target, kwargs.get('target', None)))
-
-
 
         # make sql just add string together
         flag = False
@@ -97,10 +93,10 @@ class logrotate(object):
         '''
         dataList = []
         for row in allData:
-            IO_data = self.get_IO_data(row[1])  #use con_hash to find send and recv data in flow
+            IO_data = self.get_IO_data(row[1])  # use con_hash to find send and recv data in flow
             temp_dict = {}
-            #temp_dict['con_id'] = row[0]
-            #temp_dict['con_hash'] = row[1]
+            # temp_dict['con_id'] = row[0]
+            # temp_dict['con_hash'] = row[1]
             temp_dict['token'] = b64decode(row[2])
             temp_dict['host'] = row[3]
             temp_dict['ip'] = row[4]
@@ -111,7 +107,7 @@ class logrotate(object):
             temp_dict['target'] = row[9]
             temp_dict['data'] = IO_data
             dataList.append(logdata(temp_dict))
-        return  dataList
+        return dataList
 
     def get_IO_data(self, hash):
         """
@@ -121,7 +117,7 @@ class logrotate(object):
         data = []
         try:
             csr = self._db.cursor()
-            csr.execute(self._sql_flow%hash)
+            csr.execute(self._sql_flow % hash)
             temp_data = csr.fetchall()
             csr.close()
         except:
@@ -129,11 +125,8 @@ class logrotate(object):
             self._db.rollback()
 
         for row in temp_data:
-            data.append((row[2],row[3],b64decode(row[4])))
+            data.append((row[2], row[3], b64decode(row[4])))
 
         data.sort()
 
         return data
-
-
-
