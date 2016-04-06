@@ -68,7 +68,7 @@ class pcapDecode(threading.Thread):
             tmp = self.io.read()
             self.io.close()
             self.io = StringIO.StringIO()
-            self.io.write(self.fileHead+tmp)
+            self.io.write(self.fileHead + tmp)
             return
         except StopIteration:
             print 'inter'
@@ -154,8 +154,8 @@ class pcapDecode(threading.Thread):
                         if packData.level() >= 0:
                             packData.show()
                             self.i += 1
-                            #print '--------------------------------------------------------------------'
-                            #print self.i
+                            # print '--------------------------------------------------------------------'
+                            # print self.i
                         # print "show over"
                         if sqllog.sql_on == True:
                             sqllog.updata_sql()
