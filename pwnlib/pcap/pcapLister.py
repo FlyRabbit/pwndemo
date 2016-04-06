@@ -2,10 +2,11 @@ import dpkt
 
 from pwnlib import sqllog
 from pwnlib.daemons import listened
+from pwnlib.pcap.config import getToken
 from pwnlib.pcap.pcapDecode import addQueue, start, finishDecode
 from pwnlib.timeout import Timeout
 
-token_list = ['misaka']
+#token_list = ['misaka']
 
 
 class pcapLister():
@@ -31,7 +32,7 @@ class pcapLister():
 
             listen.close_info_log(True)
             token = listen.recvline()[:-1]
-            if token in token_list:
+            if token in getToken():
                 info = tuple(listen.recvline()[:-1].split(','))
                 if len(info) != 2:
                     listen.close()

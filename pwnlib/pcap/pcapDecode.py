@@ -16,7 +16,7 @@ from pwnlib.logdata import logdata
 
 
 class pcapDecode(threading.Thread):
-    fileName = '/tmp/pcapTempData'
+    #fileName = '/tmp/pcapTempData'
 
     def __init__(self):
         super(pcapDecode, self).__init__()

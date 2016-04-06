@@ -20,8 +20,7 @@ class daemon(Timeout):
     def __init__(self, timeout=90):
         if timeout == 0:
             timeout = Timeout.forever
-        if os.getuid() != 0:
-            logger.error("This daemon need to run at root")
+        self.permission = False
         super(daemon, self).__init__(timeout)
 
     def set_listen(self, port=0, bindaddr="0.0.0.0",
@@ -66,14 +65,15 @@ class daemon(Timeout):
 
             if sqllog.sql_on == True:
                 self.sql_init(listen)
-
-            self._set_env(getFlag)
+            if self.permission:
+                self._set_env(getFlag)
             pid = os.fork()
             if pid == 0:
                 try:
                     if sqllog.sql_on == True:
                         sqllog.updata_sql()
-                    self._set_permission()
+                    if self.permission:
+                        self._set_permission()
                     process = tubes.process.process(self.argv,
                                                     self.shell,
                                                     self.executable,
@@ -100,7 +100,8 @@ class daemon(Timeout):
                     listen.close()
             else:
                 os.waitpid(pid, 0)
-                self._clear_env()
+                if self.permission:
+                    self._clear_env()
                 if sqllog.sql_on == True:
                     sqllog.updata_sql()
                     sqllog.sql.log_finish()
@@ -143,3 +144,8 @@ class daemon(Timeout):
         ip, sport = listen.sock.getsockname()
         client = (host, dport, "")
         sqllog.sql.log_new_connection(client, (self.argv, ip, sport))
+
+    def open_permission(self):
+        if os.getuid() != 0:
+            logger.error("This daemon need to run at root")
+        self.permission = True
