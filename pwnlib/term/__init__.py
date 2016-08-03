@@ -78,4 +78,4 @@ def init():
     term.on_winch.append(update_geometry)
     readline.init()
 
-    term_mode = True
+    term_mode = False

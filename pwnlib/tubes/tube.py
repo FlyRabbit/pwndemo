@@ -791,13 +791,14 @@ class tube(Timeout):
         def recv_thread():
             while not go.isSet():
                 try:
-                    cur = self.recv(timeout = 0.05)
+                    cur = self.recv(timeout=0.05)
                     if cur:
-                        sys.stderr.write(cur)
-                        sys.stderr.flush()
+                        sys.stdout.write(cur)
+                        sys.stdout.flush()
                 except EOFError:
-                    log.info('Got EOF while reading in interactive')
+                    #log.info('Got EOF while reading in interactive')
                     break
+            sys.stdout.write(self.recv(4096))
 
         t = context.Thread(target = recv_thread)
         t.daemon = True
@@ -815,11 +816,11 @@ class tube(Timeout):
                         self.send(data)
                     except EOFError:
                         go.set()
-                        log.info('Got EOF while sending in interactive')
+                        #log.info('Got EOF while sending in interactive')
                 else:
                     go.set()
         except KeyboardInterrupt:
-            log.info('Interrupted')
+            #log.info('Interrupted')
             go.set()
 
         while t.is_alive():

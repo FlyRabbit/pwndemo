@@ -1,0 +1,6 @@
+userdel: pwnuser19385 mail spool (/var/mail/pwnuser19385) not found
+groupdel: group 'pwnuser19385' does not exist
+userdel: pwnuser19444 mail spool (/var/mail/pwnuser19444) not found
+groupdel: group 'pwnuser19444' does not exist
+userdel: pwnuser19566 mail spool (/var/mail/pwnuser19566) not found
+groupdel: group 'pwnuser19566' does not exist

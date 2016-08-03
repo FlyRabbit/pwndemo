@@ -15,8 +15,8 @@ from multiprocessing import Queue
 
 
 class tcpdunmp():
-    cmd = ['tcpdump', '-i', 'lo', 'port', '9999', '-n', '-B', '1080', '-s', '0', '-w', '-']
-    IP = '127.0.0.1'
+    cmd = ['tcpdump', '-i', 'lo', 'port', '4444', '-n', '-B', '1080', '-s', '0', '-w', '-']
+    IP = '192.168.1.100'
     PORT = 12345
     NAME = 'misaka'
     token = 'a token'

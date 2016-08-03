@@ -63,7 +63,7 @@ class pcapDecode(threading.Thread):
             ether2 = dpkt.ethernet.Ethernet(data)
             Pos2 = self.io.pos
         except dpkt.NeedData:
-            print  'need data'
+            #print  'need data'
             self.io.seek(pos)
             tmp = self.io.read()
             self.io.close()
@@ -71,7 +71,7 @@ class pcapDecode(threading.Thread):
             self.io.write(self.fileHead + tmp)
             return
         except StopIteration:
-            print 'inter'
+            #print 'inter'
             self.io.seek(pos)
             tmp = self.io.read()
             self.io.close()

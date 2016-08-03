@@ -32,7 +32,7 @@ class logdata(object):
         return level
 
 
-    def show(self):
+    def show(self,more = False):
         """
         show the log data after format
         """
@@ -47,7 +47,20 @@ class logdata(object):
 
         datas = self._data['data']
 
+        b = 0
         for data in datas:
+            if b != 0:
+                b -= 1
+
+            if more == True and b == 0:
+                a = raw_input()
+                if a == '':
+                    pass
+                elif a == 'c':
+                    more = False
+                else:
+                    b = int(a)
+
             if data[1] == sqllog.recv:
                 log.recv('Received %#x bytes At %s: ' % (len(data[2]), ctime(data[0])))
             elif data[1] == sqllog.send:

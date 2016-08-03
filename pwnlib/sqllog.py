@@ -10,7 +10,7 @@ import log
 It use mysql to stone all pwn attack logs.Just use logrotate to review logs.
 """
 logger = log.getLogger('pwnlib.sqllog')
-recv = 1
+recv = 1 
 send = 0
 
 

@@ -46,6 +46,7 @@ from pwnlib.util.proc import pidof
 from pwnlib.sqllog import set_sql
 from pwnlib.logrotate import logrotate
 from pwnlib.pcap.pcapLister import pcapLister
+from pwnlib.daemons.logListen import logListen
 
 try:
     import cPickle as pickle
